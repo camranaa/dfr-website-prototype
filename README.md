@@ -1,0 +1,13 @@
+# DFR website — prototype
+
+Demo prototype of a redesigned website for the Department of Foreign Relations (KRG), with a media CMS and an internal staff portal.
+**This is not the official DFR website.** News items marked "نموونە" and all staff data are samples.
+
+- Public site: `index.html` (information only)
+- Media CMS: `cms.html`
+- Internal portal: `portal.html`
+- Demo logins are listed on each login page (password `1234`) — demonstration only; a real deployment uses SSO + MFA.
+
+Data entered here is saved only in your own browser (localStorage). Reset: portal → admin → ڕێکخستنەکان → ئامار.
+
+Fonts: Noto Naskh Arabic / Noto Sans Arabic (SIL OFL). Flags: flag-icons (MIT).
