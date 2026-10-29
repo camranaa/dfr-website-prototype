@@ -3,7 +3,7 @@
    Data lives in this browser's localStorage; uploads are kept as compressed data URLs. */
 (function () {
   if (window.claude || !window.DFR_SEED) return;
-  var KEY = 'dfr-local-db-v2', BKEY = 'dfr-local-blob:', mem = {}, ls = null;
+  var KEY = 'dfr-local-db-v3', BKEY = 'dfr-local-blob:', mem = {}, ls = null;
   try { localStorage.setItem('dfr-t', '1'); localStorage.removeItem('dfr-t'); ls = localStorage; } catch (e) { ls = null; }
   function getItem(k) { return ls ? ls.getItem(k) : (mem[k] || null); }
   function setItem(k, v) { if (ls) ls.setItem(k, v); else mem[k] = v; }

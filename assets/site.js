@@ -41,7 +41,7 @@ window.DFR = (function () {
     return p[2] + '/' + p[1] + '/' + p[0];
   }
   // uploaded files: '/_blob/<id>' on the hosted page, a stored data URL in the offline package
-  function blob(id) { return (window.DFR_LOCAL && window.DFR_LOCAL.blob(id)) || '/_blob/' + id; }
+  function blob(id) { if (/^assets\//.test(String(id))) return id; return (window.DFR_LOCAL && window.DFR_LOCAL.blob(id)) || '/_blob/' + id; }
   function img(id, label) {
     return id ? '<img src="' + esc(blob(id)) + '" alt="" loading="lazy">' : '<div class="ph">' + esc(label || 'وێنە') + '</div>';
   }
