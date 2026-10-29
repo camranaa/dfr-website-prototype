@@ -239,8 +239,8 @@ window.DFR = (function () {
       alb.innerHTML = albums.length ? albums.map(function (a) {
         var n = (a.image ? 1 : 0) + (a.gallery || []).length;
         var cover = a.image || (a.gallery || [])[0];
-        return '<a class="alb" href="' + D.link(a) + '"><span class="cover">' + (cover ? D.img(cover) : '<span class="stack">' + CAM + '<span>وێنەکان لە CMS زیاد دەکرێن</span></span>') +
-          '<span class="count">' + (n ? n + ' وێنە' : 'بێ وێنە') + '</span></span><b>' + D.esc(a.title) + '</b><small>' + D.fmtDate(a.date) + (a.sample ? ' · نموونە' : '') + '</small></a>';
+        return '<a class="alb" href="' + D.link(a) + '"><span class="cover">' + (cover ? D.img(cover) : '<span class="stack">' + CAM + '<span>وێنە</span></span>') +
+          (n ? '<span class="count">' + n + ' وێنە</span>' : '') + '</span><b>' + D.esc(a.title) + '</b><small>' + D.fmtDate(a.date) + (a.sample ? ' · نموونە' : '') + '</small></a>';
       }).join('') : D.emptyState('وێنەی چالاکییەکانی ئەم نوێنەرایەتییە لێرە کۆدەکرێنەوە.');
     });
   }
@@ -351,7 +351,7 @@ window.DFR = (function () {
   function year(p) { return String(p.date || '').slice(0, 4); }
   function cover(p, big) {
     if (p.cover) return '<img src="' + D.esc(D.blob(p.cover)) + '" alt="">';
-    return '<span class="pc-ph"><b>' + D.esc(CATS[p.category] || T('بڵاوکراوە', 'Publication', 'منشور')) + '</b><span>' + D.esc(p.title) + '</span><i>' + D.esc(p.unit || T('فەرمانگەی پەیوەندییەکانی دەرەوە', 'Department of Foreign Relations', 'دائرة العلاقات الخارجية')) + '</i></span>';
+    return '<span class="pc-ph"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><b>' + T('وێنەی بەرگ', 'Cover image', 'صورة الغلاف') + '</b><i>' + D.esc(CATS[p.category] || T('بڵاوکراوە', 'Publication', 'منشور')) + '</i></span>';
   }
   function pubLink(p) { return 'publication.html#' + encodeURIComponent(p.id); }
   function fileLink(p) {
@@ -469,7 +469,7 @@ window.DFR = (function () {
   function items(type) { return allItems().then(function (a) { return a.filter(function (o) { return o.type === type; }).sort(byOrder); }); }
   function arts() { return D.published().then(function (a) { return (a || []).filter(function (x) { return (x.targets || []).indexOf('cdd') > -1; }); }); }
   function pubs() { return D.publishedPubs().then(function (a) { return (a || []).filter(function (x) { return (x.targets || []).indexOf('cdd') > -1; }); }); }
-  var SAMPLE = S('نموونە', 'Sample', 'نموذج');
+  var SAMPLE = S('نموونە', 'Sample', 'نموذج'), PH = S('وێنە', 'Photo', 'صورة');
   function empty(msg) { return '<div class="empty">' + esc(msg || S('هێشتا هیچ شتێک بڵاو نەکراوەتەوە.', 'Nothing published yet.', 'لا يوجد محتوى منشور بعد.')) + '</div>'; }
   function ncard(a) {
     var k = C.kinds[a.kind];
@@ -477,18 +477,18 @@ window.DFR = (function () {
   }
   function pcard(p) {
     var st = C.status[p.pstatus] || {};
-    return '<article class="prog st-' + esc(p.pstatus || '') + '"><a class="pimg" href="' + F('program') + '#' + encodeURIComponent(p.id) + '" tabindex="-1" aria-hidden="true">' + (p.image ? D.img(p.image) : '<span class="pph">' + C.icons.cap + '</span>') + '</a><div class="pbody">' +
+    return '<article class="prog st-' + esc(p.pstatus || '') + '"><a class="pimg" href="' + F('program') + '#' + encodeURIComponent(p.id) + '" tabindex="-1" aria-hidden="true">' + (p.image ? D.img(p.image) : '<span class="pph">' + C.icons.cap + '<i>' + PH + '</i></span>') + '</a><div class="pbody">' +
       '<div class="meta"><span class="pill2 st-' + esc(p.pstatus || '') + '">' + esc(lk(st)) + '</span>' + (p.sample ? '<span class="chip sample">' + SAMPLE + '</span>' : '') + '</div><h3><a href="' + F('program') + '#' + encodeURIComponent(p.id) + '">' + esc(p.title) + '</a></h3>' +
       '<dl class="pfacts">' + (p.duration ? '<dt>' + T('duration') + '</dt><dd>' + esc(p.duration) + '</dd>' : '') + (p.start ? '<dt>' + T('start') + '</dt><dd>' + D.fmtDate(p.start) + '</dd>' : '') + (p.mode ? '<dt>' + T('mode') + '</dt><dd>' + esc(p.mode) + '</dd>' : '') + '</dl></div></article>';
   }
-  function logo(p) { return p.logo ? D.img(p.logo) : '<span class="lph">' + esc(String(p.name || '?').replace(/\(.*?\)/g, '').split(/[\s—-]+/).filter(Boolean).slice(0, 2).map(function (w) { return w.charAt(0); }).join('\u200c')) + '</span>'; }
+  function logo(p) { return p.logo ? D.img(p.logo) : '<span class="lph">' + S('لۆگۆ', 'Logo', 'شعار') + '</span>'; }
   function partner(p) { return '<a class="partner"' + (p.website ? ' href="' + esc(p.website) + '" target="_blank" rel="noopener"' : '') + '><span class="plogo">' + logo(p) + '</span><b>' + esc(p.name) + '</b><small>' + esc(lk(C.ptypes[p.ptype])) + (p.sample ? ' · ' + SAMPLE : '') + '</small>' + (p.desc ? '<span class="pdesc">' + esc(p.desc) + '</span>' : '') + '</a>'; }
   function person(p, big) {
-    return '<div class="cdd-person' + (big ? ' lead-p' : '') + '">' + (p.photo ? '<span class="ph-av">' + D.img(p.photo) + '</span>' : '<span class="ph-av">' + C.icons.user + '</span>') + '<div><span class="pcat">' + esc(p.roleLabel || '') + (p.sample ? ' · ' + SAMPLE : '') + '</span><h3>' + esc(p['name_' + L] || p.name) + '</h3><p class="ptitle">' + esc(p['title_' + L] || p.title || '') + '</p>' +
+    return '<div class="cdd-person' + (big ? ' lead-p' : '') + '">' + (p.photo ? '<span class="ph-av">' + D.img(p.photo) + '</span>' : '<span class="ph-av ph-lbl">' + C.icons.user + '<i>' + PH + '</i></span>') + '<div><span class="pcat">' + esc(p.roleLabel || '') + (p.sample ? ' · ' + SAMPLE : '') + '</span><h3>' + esc(p['name_' + L] || p.name) + '</h3><p class="ptitle">' + esc(p['title_' + L] || p.title || '') + '</p>' +
       ((p['bio_' + L] || p.bio) ? '<div class="prose">' + D.richOrText(p['bio_' + L] || p.bio) + '</div>' : (big ? '<p class="pmeta">' + T('bio_ph') + '</p>' : '')) +
       ((p.email || p.phone) ? '<p class="pmeta">' + [p.email ? '<a class="ltr" dir="ltr" href="mailto:' + esc(p.email) + '">' + esc(p.email) + '</a>' : '', p.phone ? '<span class="ltr" dir="ltr">' + esc(p.phone) + '</span>' : ''].filter(Boolean).join(' · ') + '</p>' : '') + '</div></div>';
   }
-  var ROLE = { director: S('بەرپرسی ناوەند', 'Director', 'المدير'), staff: S('ستاف', 'Staff', 'الكادر'), advisor: S('ڕاوێژکار', 'Advisor', 'مستشار'), trainer: S('ڕاهێنەر', 'Trainer', 'مدرب') };
+  var ROLE = { researcher: S('توێژەر', 'Researcher', 'باحث'), director: S('بەرپرسی ناوەند', 'Director', 'المدير'), staff: S('ستاف', 'Staff', 'الكادر'), advisor: S('ڕاوێژکار', 'Advisor', 'مستشار'), trainer: S('ڕاهێنەر', 'Trainer', 'مدرب') };
 
   // editable texts + SEO overrides from the CMS
   items('page').then(function (ps) { ps.forEach(function (p) { var el = $('cdd-txt-' + p.slug), b = p['body_' + L]; if (el && b) el.innerHTML = D.richOrText(b); }); });
@@ -500,6 +500,8 @@ window.DFR = (function () {
     arts().then(function (a) { $('cdd-news').innerHTML = a.length ? a.slice(0, 3).map(ncard).join('') : empty(); });
     pubs().then(function (p) { p.sort(function (a, b) { return (b.featured ? 1 : 0) - (a.featured ? 1 : 0); }); $('cdd-research').innerHTML = p.length ? p.slice(0, 3).map(D.pubCard).join('') : empty(); });
     items('program').then(function (p) { var ord = { open: 0, soon: 1, closed: 2, done: 3 }; p.sort(function (a, b) { return (a.pstatus in ord ? ord[a.pstatus] : 9) - (b.pstatus in ord ? ord[b.pstatus] : 9); }); $('cdd-programs').innerHTML = p.length ? p.slice(0, 3).map(pcard).join('') : empty(); });
+    arts().then(function (a) { var s = a.filter(function (x) { return x.kind === 'conference' || x.kind === 'training'; }); $('cdd-seminars').innerHTML = s.length ? s.slice(0, 3).map(ncard).join('') : empty(); });
+    items('person').then(function (ps) { var rs = ps.filter(function (p) { return p.role === 'researcher'; }); rs.forEach(function (p) { p.roleLabel = ROLE.researcher; }); $('cdd-researchers').innerHTML = rs.length ? rs.slice(0, 4).map(function (p) { return person(p); }).join('') : empty(); });
     items('partner').then(function (p) { $('cdd-partners-strip').innerHTML = p.length ? p.slice(0, 8).map(function (x) { return '<span class="plogo" title="' + esc(x.name) + '">' + logo(x) + '</span>'; }).join('') : empty(); });
   }
   if (slug === 'goals') items('goal').then(function (g) { if (!g.length) return; $('cdd-goals').innerHTML = g.map(function (x, n) { return '<li><span class="gi">' + (C.icons[x.icon] || C.icons.target) + '</span><span class="gn">' + String(n + 1).padStart(2, '0') + '</span><b>' + esc(x['title_' + L] || x.title_ku) + '</b>' + ((x['desc_' + L] || x.desc_ku) ? '<span class="gd">' + esc(x['desc_' + L] || x.desc_ku) + '</span>' : '') + '</li>'; }).join(''); });
@@ -520,7 +522,7 @@ window.DFR = (function () {
       var p = ps.filter(function (x) { return x.id === id; })[0]; if (!p) { box.innerHTML = empty(S('ئەم خولە نەدۆزرایەوە.', 'Course not found.', 'لم يتم العثور على الدورة.')); return; }
       document.title = p.title + ' — ' + T('k');
       var open = p.pstatus === 'open' && p.regOpen;
-      box.innerHTML = '<div class="pimg big">' + (p.image ? D.img(p.image) : '<span class="pph">' + C.icons.cap + '</span>') + '</div><div><span class="pill2 st-' + esc(p.pstatus) + '">' + esc(lk(C.status[p.pstatus])) + '</span>' + (p.sample ? ' <span class="chip sample">' + SAMPLE + '</span>' : '') + '<h1>' + esc(p.title) + '</h1>' +
+      box.innerHTML = '<div class="pimg big">' + (p.image ? D.img(p.image) : '<span class="pph">' + C.icons.cap + '<i>' + PH + '</i></span>') + '</div><div><span class="pill2 st-' + esc(p.pstatus) + '">' + esc(lk(C.status[p.pstatus])) + '</span>' + (p.sample ? ' <span class="chip sample">' + SAMPLE + '</span>' : '') + '<h1>' + esc(p.title) + '</h1>' +
         '<dl class="pfacts">' + [['duration', p.duration], ['start', p.start && D.fmtDate(p.start) + (p.end ? S(' تا ', ' to ', ' إلى ') + D.fmtDate(p.end) : '')], ['mode', p.mode], ['audience', p.audience], ['seats', p.seats]].filter(function (x) { return x[1]; }).map(function (x) { return '<dt>' + T(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>'; }).join('') + '</dl>' +
         '<div class="prose">' + D.richOrText(p.desc) + '</div>' + D.shareBar(p.title) +
         (open ? '<form class="cdd-form" data-kind="registration" data-program="' + esc(p.id) + '" data-program-title="' + esc(p.title) + '" novalidate><h2>' + T('register') + '</h2><p class="pmeta">' + T('reg_note') + '</p><div class="grid2">' +
@@ -545,7 +547,7 @@ window.DFR = (function () {
     ps.forEach(function (p) { (groups[p.ptype] = groups[p.ptype] || []).push(p); });
     $('cdd-partners').innerHTML = ps.length ? Object.keys(C.ptypes).filter(function (k) { return groups[k]; }).map(function (k) { return '<div class="pgroup"><h3 class="sub-h">' + esc(lk(C.ptypes[k])) + '</h3><div class="partners">' + groups[k].map(partner).join('') + '</div></div>'; }).join('') : empty();
     $('cdd-astats').innerHTML = [[al.length, S('دەرچووی تۆمارکراو', 'Registered alumni', 'خريج مسجل')], [pr.filter(function (p) { return p.pstatus === 'done'; }).length, S('خولی تەواوبوو', 'Completed courses', 'دورة مكتملة')], [ps.length, S('هاوبەش', 'Partners', 'شريك')]].map(function (x) { return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('');
-    $('cdd-alumni').innerHTML = al.length ? al.map(function (a) { return '<div class="cdd-person alum">' + (a.photo ? '<span class="ph-av">' + D.img(a.photo) + '</span>' : '<span class="ph-av">' + C.icons.cap + '</span>') + '<div><h3>' + esc(a.name) + '</h3><p class="ptitle">' + esc(a.position || '') + '</p><p class="pmeta">' + esc([a.program, a.year].filter(Boolean).join(' · ')) + (a.sample ? ' · ' + SAMPLE : '') + '</p>' + (a.quote ? '<blockquote>' + esc(a.quote) + '</blockquote>' : '') + '</div></div>'; }).join('') : empty();
+    $('cdd-alumni').innerHTML = al.length ? al.map(function (a) { return '<div class="cdd-person alum">' + (a.photo ? '<span class="ph-av">' + D.img(a.photo) + '</span>' : '<span class="ph-av ph-lbl">' + C.icons.user + '<i>' + PH + '</i></span>') + '<div><h3>' + esc(a.name) + '</h3><p class="ptitle">' + esc(a.position || '') + '</p><p class="pmeta">' + esc([a.program, a.year].filter(Boolean).join(' · ')) + (a.sample ? ' · ' + SAMPLE : '') + '</p>' + (a.quote ? '<blockquote>' + esc(a.quote) + '</blockquote>' : '') + '</div></div>'; }).join('') : empty();
   });
   if (slug === 'news') arts().then(function (all) {
     var k = '', el = $('cdd-news-all');
