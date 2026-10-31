@@ -245,6 +245,33 @@ window.DFR = (function () {
     });
   }
 
+  // consulate pages: bilateral ties, notices and timeline (desk-managed 'consulate_info/<slug>'), menu highlight
+  if (page === 'rep' && root.classList.contains('cons2')) (function () {
+    var slug = root.getAttribute('data-rep'), $ = function (id) { return document.getElementById(id); };
+    D.db().then(function (d) {
+      if (!d) return;
+      d.doc('consulate_info/' + slug).get().then(function (s) {
+        var c = s.exists ? s.data() : null; if (!c || c.status !== 'published') return;
+        var smp = c.sample ? ' <span class="chip sample">نموونە</span>' : '';
+        if (c.summary) $('c-ties-sum').innerHTML = (D.richOrText ? D.richOrText(c.summary) : D.esc(c.summary)) + smp;
+        if ((c.areas || []).length) $('c-ties-areas').innerHTML = '<b class="sub-h" style="width:100%">بوارەکانی هاوکاری</b>' + c.areas.map(function (x) { return '<span>' + D.esc(x) + '</span>'; }).join('');
+        if ((c.agreements || []).length) $('c-ties-agr').innerHTML = c.agreements.map(function (g) { return '<div class="agr"><span class="d">' + D.esc(g.date || '') + '</span><div><b>' + D.esc(g.title || '') + '</b>' + (g.note ? '<p>' + D.esc(g.note) + '</p>' : '') + '</div></div>'; }).join('');
+        var ns = (c.notices || []).filter(function (n) { return n && (n.title || n.text); });
+        if (ns.length) {
+          $('c-notices').innerHTML = ns.map(function (n) { return '<div class="cnote" role="note"><b>' + D.esc(n.title || 'ئاگاداری') + '</b>' + (n.text ? '<p>' + D.esc(n.text) + '</p>' : '') + (n.date ? '<small>' + D.esc(n.date) + '</small>' : '') + (c.sample ? ' <span class="chip sample">نموونە</span>' : '') + '</div>'; }).join('');
+          var top = $('c-notice'); if (ns[0].pin) top.hidden = false; else return; top.innerHTML = '<b>ئاگاداری: ' + D.esc(ns[0].title || '') + '</b>' + D.esc(ns[0].text || '');
+        }
+      }).catch(function () {});
+    });
+    D.published().then(function (all) {
+      var mine = (all || []).filter(function (a) { return (a.targets || []).indexOf(slug) > -1; }).slice(0, 5);
+      $('c-ties-tl').innerHTML = mine.length ? mine.map(function (a) { return '<li><time>' + D.fmtDate(a.date) + '</time><a href="' + D.link(a) + '">' + D.esc(a.title) + '</a></li>'; }).join('') : '<li class="note">هێشتا چالاکییەک تۆمار نەکراوە.</li>';
+    });
+    var links = Array.prototype.slice.call(root.querySelectorAll('.csub ul a'));
+    function spy() { var y = window.scrollY + 90, cur = null; links.forEach(function (l) { var s = document.querySelector(l.getAttribute('href')); if (s && s.offsetTop <= y) cur = l; }); links.forEach(function (l) { if (l === cur) l.setAttribute('aria-current', 'true'); else l.removeAttribute('aria-current'); }); }
+    window.addEventListener('scroll', spy, { passive: true }); spy();
+  })();
+
   if (page === 'reps-dir') {
     var q = document.getElementById('mq'), sel = document.getElementById('mreg'), none = document.getElementById('mnone'), count = document.getElementById('dcount');
     var grid = document.getElementById('ctiles'), cards = grid.querySelectorAll('.ctile'), type = '';
