@@ -52,6 +52,9 @@ window.DFR = (function () {
   function card(a, opts) {
     var r = (opts && opts.showRep) ? repOf(a) : '';
     var from = r ? '<a class="from" href="rep-' + esc(r) + '.html"><img src="assets/flags/' + esc(r) + '.svg" alt="">' + esc(REPS[r].ku) + '</a>' : '';
+    if (opts && opts.showDesk) { var CN = window.DFR_CONS || {}, cs = (a.targets || []).filter(function (t) { return CN[t]; })[0];
+      from = cs ? '<a class="from" href="' + esc(CN[cs].file) + '"><img src="assets/flags/iso/' + esc(CN[cs].iso) + '.svg" alt="">' + esc(CN[cs].ku) + '</a><span class="from unit">' + esc(CN[cs].desk) + '</span>'
+        : (a.unit ? '<span class="from unit">' + esc(a.unit) + '</span>' : ''); }
     return '<article class="card"><a class="img" href="' + link(a) + '" tabindex="-1" aria-hidden="true">' + img(a.image) + '</a>' +
       '<div class="body"><div class="meta"><span class="date">' + fmtDate(a.date) + '</span>' + (a.subject ? '<span class="chip">' + esc(a.subject) + '</span>' : '') + (a.sample ? '<span class="chip sample">نموونە</span>' : '') + '</div>' +
       (from ? '<div>' + from + '</div>' : '') +
@@ -154,19 +157,30 @@ window.DFR = (function () {
       var home = all.filter(function (a) { return (a.targets || []).indexOf('home') > -1; });
       var reps = all.filter(function (a) { return !!D.repOf(a); });
       var cnt = document.getElementById('reps-count'); if (cnt) cnt.textContent = reps.length || '';
+      // news from directorates and desks: consulate activities managed by the desks + posts written by a directorate
+      var CN = window.DFR_CONS || {};
+      var deskOf = function (a) { var cs = (a.targets || []).filter(function (t) { return CN[t]; })[0]; return cs ? CN[cs].desk : (/^بەڕێوەبەرایەتیی /.test(a.unit || '') ? String(a.unit).replace(/^بەڕێوەبەرایەتیی /, '') : ''); };
+      var desks = all.filter(function (a) { return !!deskOf(a); });
+      var dc = document.getElementById('desks-count'); if (dc) dc.textContent = desks.length || '';
+      var dsel = '', dbox = document.getElementById('desk-filter');
+      if (dbox) { var names = []; desks.forEach(function (a) { var d = deskOf(a); if (names.indexOf(d) < 0) names.push(d); });
+        dbox.innerHTML = '<button type="button" data-d="" aria-pressed="true">هەموو</button>' + names.map(function (n) { return '<button type="button" data-d="' + D.esc(n) + '" aria-pressed="false">' + D.esc(n.replace(/^کاروباری /, '')) + '</button>'; }).join('');
+        Array.prototype.forEach.call(dbox.querySelectorAll('button'), function (b) { b.addEventListener('click', function () { dsel = b.getAttribute('data-d'); Array.prototype.forEach.call(dbox.querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); feeds.desks.items = desks.filter(function (a) { return !dsel || deskOf(a) === dsel; }); show('desks'); }); }); }
       var top5 = home.filter(function (a) { return a.featured; }).concat(home.filter(function (a) { return !a.featured; })).slice(0, 5);
       var top = top5[0];
       var seenRep = {}, highlights = reps.filter(function (a) { var r = D.repOf(a); if (seenRep[r]) return false; seenRep[r] = 1; return true; }).slice(0, 8);
       if (top) leadCarousel(lead, top5, highlights);
       var feeds = {
         dfr: { items: home.filter(function (a) { return top5.indexOf(a) < 0; }).concat(top5.slice(1)).sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); }).filter(function (a) { return a !== top; }), opts: null, empty: D.emptyState() },
-        reps: { items: reps, opts: { showRep: true }, empty: D.emptyState('چالاکی و کۆبوونەوەکانی نوێنەرایەتییەکان لێرە دەردەکەون کاتێک لە CMS بڵاو دەکرێنەوە.') }
+        reps: { items: reps, opts: { showRep: true }, empty: D.emptyState('چالاکی و کۆبوونەوەکانی نوێنەرایەتییەکان لێرە دەردەکەون کاتێک لە CMS بڵاو دەکرێنەوە.') },
+        desks: { items: desks, opts: { showDesk: true }, empty: D.emptyState('هەواڵی بەڕێوەبەرایەتی و دێسکەکان لێرە دەردەکەون کاتێک لە CMS بڵاو دەکرێنەوە.') }
       };
       var tabs = document.querySelectorAll('.tabs-h [data-feed]');
       function show(key) {
         var f = feeds[key];
         Array.prototype.forEach.call(tabs, function (b) { b.setAttribute('aria-selected', b.getAttribute('data-feed') === key ? 'true' : 'false'); });
-        var panel = document.getElementById('home-panel'); if (panel) panel.setAttribute('aria-labelledby', key === 'dfr' ? 't-dfr' : 't-reps');
+        var panel = document.getElementById('home-panel'); if (panel) panel.setAttribute('aria-labelledby', 't-' + key);
+        if (dbox) dbox.hidden = key !== 'desks';
         D.paged(grid, pager, f.items, 6, function (a) { return D.card(a, f.opts); }, f.empty);
       }
       Array.prototype.forEach.call(tabs, function (b, i) {
@@ -515,7 +529,7 @@ window.DFR = (function () {
       ((p['bio_' + L] || p.bio) ? '<div class="prose">' + D.richOrText(p['bio_' + L] || p.bio) + '</div>' : (big ? '<p class="pmeta">' + T('bio_ph') + '</p>' : '')) +
       ((p.email || p.phone) ? '<p class="pmeta">' + [p.email ? '<a class="ltr" dir="ltr" href="mailto:' + esc(p.email) + '">' + esc(p.email) + '</a>' : '', p.phone ? '<span class="ltr" dir="ltr">' + esc(p.phone) + '</span>' : ''].filter(Boolean).join(' · ') + '</p>' : '') + '</div></div>';
   }
-  var ROLE = { researcher: S('توێژەر', 'Researcher', 'باحث'), director: S('بەرپرسی ناوەند', 'Director', 'المدير'), staff: S('ستاف', 'Staff', 'الكادر'), advisor: S('ڕاوێژکار', 'Advisor', 'مستشار'), trainer: S('ڕاهێنەر', 'Trainer', 'مدرب') };
+  var ROLE = { researcher: S('توێژەر', 'Researcher', 'باحث'), director: S('سەرۆکی ناوەند', 'Head of the Center', 'رئيس المركز'), staff: S('ستاف', 'Staff', 'الكادر'), advisor: S('ڕاوێژکار', 'Advisor', 'مستشار'), trainer: S('ڕاهێنەر', 'Trainer', 'مدرب') };
 
   // editable texts + SEO overrides from the CMS
   items('page').then(function (ps) { ps.forEach(function (p) { var el = $('cdd-txt-' + p.slug), b = p['body_' + L]; if (el && b) el.innerHTML = D.richOrText(b); }); });

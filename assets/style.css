@@ -882,3 +882,8 @@ a.partner[href]:hover{border-color:var(--gold)}
 .cside p{margin:0;color:var(--on-dark-2);font-size:14.5px}
 .cside .menu-btn{background:var(--gold);color:var(--ink);border:0}
 @media (max-width:820px){.ties,.cinfo2{grid-template-columns:1fr}.cons2 .csub .cme b{display:none}}
+.cdd-obj li b{display:block;color:var(--cdd);font-size:15.5px;margin-bottom:2px}
+.cdd-obj li span{color:var(--ink-2);font-size:14.5px}
+.cdd-txt ul{margin:0 0 12px;padding-inline-start:20px}.cdd-txt li{margin-bottom:6px}
+.dfilter{margin:-6px 0 14px}
+.card .from.unit{background:var(--ground);padding:1px 8px;font-weight:600;margin-inline-start:6px}
